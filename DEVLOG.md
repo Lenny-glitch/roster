@@ -409,3 +409,35 @@ Full create → configure → legality check → save → publish flow exercised
 
 ---
 
+## Phase 3a closure — 2026-06-26
+
+Three outstanding Phase 3a items closed before proceeding to Phase 3b Part 2.
+
+### Kommandos DF patch
+
+All 11 Ork Kommandos units patched in Firebase via REST PATCH to `gameData/kill-team/factions/ork-kommandos/units/{id}/stats`:
+`boss-nob-001`, `bomb-squig-001`, `kommando-boy-001`, `breacha-boy-001`, `burna-boy-001`, `comms-boy-001`, `dakka-boy-001`, `grot-001`, `rokkit-boy-001`, `slasha-boy-001`, `snipa-boy-001` — all now have `DF: "3"`.
+
+### Roster View verification (Fix 1)
+
+Verified via direct Firebase read + JS logic execution (headless browser unavailable in WSL — missing `libasound.so.2`):
+- `rosters/-Ow0T5UGlT8q7ryTPnck` loads correctly: name `"Kommandos Roster 1"`, status `published`, 10 operatives
+- All 10 operative `unitId` values resolve to unit templates in `gameData/kill-team/factions/ork-kommandos/units`
+- `_resolveWeaponNames` produces correct summaries for all 10 operatives (Boss Nob → Slugga · Big choppa, etc.)
+- Badge renders as `"Published"`. No `undefined` output.
+- Router fix confirmed in code: line 3775 calls `RosterView.render(sub)` standalone, not assigned to `innerHTML`.
+
+### Edit resume verification (Fix 2)
+
+Verified via code inspection + Firebase data shape check:
+- `render(null, null, rosterId)` sets `state.rosterId = rosterId` from the URL param (line 2532), not from `meta.rosterId` (which is absent from Firebase — non-issue)
+- `state.name` set to `data.meta.name` before `_load()` runs; name guard at line 2579 (`if (!state.name)`) prevents faction-default from overwriting it
+- Save Draft `isNew = !s.rosterId` → `false` when editing → same Firebase path reused, no duplicate created
+- All 10 operatives have `instanceId` in Firebase → restore maps cleanly
+
+### wargearOptions array fix (uncommitted before session end)
+
+`UnitSearch._transform` was calling `_parseWargear(raw.wargearOptions || '')` directly. Some source pool units store `wargearOptions` as an array rather than a string. Fixed: coerce to string via `.join(' ')` before parsing.
+
+---
+

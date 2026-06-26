@@ -3432,7 +3432,10 @@
         },
       }));
 
-      const loadoutOptions = UnitSearch._parseWargear(raw.wargearOptions || '');
+      const wargearText = Array.isArray(raw.wargearOptions)
+        ? raw.wargearOptions.join(' ')
+        : (raw.wargearOptions || '');
+      const loadoutOptions = UnitSearch._parseWargear(wargearText);
 
       return {
         id:          unitId,
